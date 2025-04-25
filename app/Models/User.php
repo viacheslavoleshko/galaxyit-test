@@ -23,6 +23,7 @@ class User extends Authenticatable implements HasName, HasMedia
     use HasFactory, Notifiable, HasRoles, InteractsWithMedia, SoftDeletes;
 
     public const PROTECTED_ROLES =  ['driver', 'manager' ,'admin'];
+    public static bool $bypassRoleAssignment = false;
     
     /**
      * The attributes that are mass assignable.
@@ -77,6 +78,11 @@ class User extends Authenticatable implements HasName, HasMedia
         });
 
         static::created(function ($user) {
+
+            if (self::$bypassRoleAssignment) {
+                return;
+            }
+
             if ($user->roles()->count() === 0) {
                 $driverRole = Role::where('name', 'driver')->first();
                 if ($driverRole) {

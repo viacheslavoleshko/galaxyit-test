@@ -16,6 +16,7 @@ class ManagerSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
+            User::$bypassRoleAssignment = true;
             $role = Role::where(['name' => 'manager'])->first();           
 
             $user = User::factory()->create([
@@ -23,6 +24,8 @@ class ManagerSeeder extends Seeder
             ]);
 
             $user->assignRole($role);
+
+            User::$bypassRoleAssignment = false;
         });
     }
 }

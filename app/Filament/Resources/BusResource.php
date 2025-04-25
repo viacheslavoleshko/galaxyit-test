@@ -31,7 +31,7 @@ class BusResource extends Resource
                     ->unique(table: Bus::class, column: 'license_plate', ignorable: fn ($record) => $record)
                     ->maxLength(7),
                 Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'firstname', fn ($query) => $query->select(['id', 'firstname', 'lastname']))
+                    ->relationship('user', 'firstname', fn ($query) => $query->select(['id', 'firstname', 'lastname'])->role('driver'))
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->firstname} {$record->lastname}")
                     ->searchable()
                     ->preload()

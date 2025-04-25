@@ -87,12 +87,12 @@ class CandidateResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole('admin');
+        return false;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->hasRole('admin');
+        return false;
     }
 
     public static function canDelete(Model $record): bool

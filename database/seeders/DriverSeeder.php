@@ -16,6 +16,8 @@ class DriverSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
+            User::$bypassRoleAssignment = true;
+
             $role = Role::where(['name' => 'driver'])->first();           
 
             $user = User::factory()->create([
@@ -23,6 +25,8 @@ class DriverSeeder extends Seeder
             ]);
 
             $user->assignRole($role);
+
+            User::$bypassRoleAssignment = false;
         });
     }
 }
