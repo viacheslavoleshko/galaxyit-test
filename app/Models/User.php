@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Filament\Models\Contracts\HasName;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
+use App\Jobs\SendUserDeletedNotification;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -86,6 +87,8 @@ class User extends Authenticatable implements HasName, HasMedia
 
         static::deleting(function ($user) {
             $user->bus()->update(['user_id' => null]);
+            info('Deleted user: ' . $user->firstname . ' ' . $user->lastname);
+            SendUserDeletedNotification::dispatch($user)->delay(now()->addDay());
         });
     }
 

@@ -2,7 +2,7 @@ services:
     mailhog:
         image: 'mailhog/mailhog:latest'
         ports:
-            - '7801:7825'
+            - '7801:8025'
 
     mariadb:
         image: 'mariadb:10.6'
