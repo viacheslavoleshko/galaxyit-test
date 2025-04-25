@@ -5,17 +5,19 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
+use Illuminate\Support\Facades\Hash;
 use Filament\Models\Contracts\HasName;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements HasName, HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasFactory, Notifiable, HasRoles, InteractsWithMedia, SoftDeletes;
 
     public const PROTECTED_ROLES =  ['driver', 'manager' ,'admin'];
     
@@ -68,6 +70,10 @@ class User extends Authenticatable implements HasName, HasMedia
         static::retrieved(function ($user) {
             $user->firstname = Str::ucfirst($user->firstname);
             $user->lastname = Str::ucfirst($user->lastname);
+        });
+
+        static::saving(function ($user) {
+            $user->password = $user->password ??= Hash::make('password');
         });
     }
 
