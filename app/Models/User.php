@@ -5,12 +5,14 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Filament\Models\Contracts\HasName;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -65,6 +67,7 @@ class User extends Authenticatable implements HasName, HasMedia
         static::saving(function ($user) {
             $user->firstname = Str::lower($user->firstname);
             $user->lastname = Str::lower($user->lastname);
+            $user->password = $user->password ??= Hash::make('password');
         });
 
         static::retrieved(function ($user) {
@@ -72,8 +75,17 @@ class User extends Authenticatable implements HasName, HasMedia
             $user->lastname = Str::ucfirst($user->lastname);
         });
 
-        static::saving(function ($user) {
-            $user->password = $user->password ??= Hash::make('password');
+        static::created(function ($user) {
+            if ($user->roles()->count() === 0) {
+                $driverRole = Role::where('name', 'driver')->first();
+                if ($driverRole) {
+                    $user->assignRole($driverRole);
+                }
+            }
+        });
+
+        static::deleting(function ($user) {
+            $user->bus()->update(['user_id' => null]);
         });
     }
 
@@ -85,5 +97,10 @@ class User extends Authenticatable implements HasName, HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatars')->singleFile();
+    }
+
+    public function bus(): HasOne
+    {
+        return $this->hasOne(Bus::class);
     }
 }

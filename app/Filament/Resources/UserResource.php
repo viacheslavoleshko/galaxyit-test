@@ -38,7 +38,8 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->required()
                     ->email()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(table: User::class, column: 'email', ignorable: fn ($record) => $record),
                 Forms\Components\TextInput::make('salary')
                     ->required()
                     ->numeric()
@@ -65,17 +66,23 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('firstname'),
-                Tables\Columns\TextColumn::make('lastname'),
+                Tables\Columns\TextColumn::make('firstname')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('lastname')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('birth_date')
-                    ->date(),
+                    ->date()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('salary')
                     ->money('UAH')
                     ->suffix('₴')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('avatar')
-                    ->collection('avatars'),
+                    ->collection('avatars')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('email'),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Role')
@@ -106,7 +113,12 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->hasRole('admin')),
+                    Tables\Actions\ForceDeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->hasRole('admin')),
+                    Tables\Actions\RestoreBulkAction::make()
+                        ->visible(fn () => auth()->user()->hasRole('admin')),
                 ]),
             ]);
     }
