@@ -35,6 +35,15 @@ class BusResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->firstname} {$record->lastname}")
                     ->searchable()
                     ->preload()
+                    ->rule(function () {
+                        return function ($attribute, $value, $fail) {
+                            // Check if the user is already assigned to another bus
+                            $existingBus = Bus::where('user_id', $value)->first();
+                            if ($existingBus) {
+                                $fail('This user is already assigned to another bus.');
+                            }
+                        };
+                    })
                     ->createOptionForm([
                         Forms\Components\TextInput::make('firstname')
                             ->required()
