@@ -28,7 +28,7 @@ class BusResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('license_plate')
                     ->required()
-                    ->unique(table: Bus::class, column: 'license_plate')
+                    ->unique(table: Bus::class, column: 'license_plate', ignorable: fn ($record) => $record)
                     ->maxLength(7),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'firstname', fn ($query) => $query->select(['id', 'firstname', 'lastname']))

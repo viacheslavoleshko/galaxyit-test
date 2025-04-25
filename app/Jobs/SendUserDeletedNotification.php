@@ -27,6 +27,8 @@ class SendUserDeletedNotification implements ShouldQueue
      */
     public function handle(): void
     {
+        info('Processing job for user ID: ' . $this->user->id);
+
         $deletedUser = User::withTrashed()->where('id', $this->user->id)->first();
 
         if ($deletedUser->trashed()) {
@@ -35,5 +37,10 @@ class SendUserDeletedNotification implements ShouldQueue
         } else {
             info('Abort sending notification email, user was restored: ' . $deletedUser->firstname . ' ' . $deletedUser->lastname);
         }
+    }
+
+    public function uniqueId()
+    {
+        return $this->user->id;
     }
 }
