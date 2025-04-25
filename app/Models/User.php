@@ -3,16 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Filament\Models\Contracts\HasName;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasName, HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
 
     public const PROTECTED_ROLES =  ['driver', 'manager' ,'admin'];
     
@@ -22,8 +25,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'firstname',
+        'lastname',
+        'birth_date',
         'email',
+        'salary',
+        'avatar',
         'password',
     ];
 
@@ -45,14 +52,32 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'birth_date' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
-    public function roles()
-{
-    return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
-        ->wherePivot('model_type', self::class);
-}
+    protected static function booted(): void
+    {
+        static::saving(function ($user) {
+            $user->firstname = Str::lower($user->firstname);
+            $user->lastname = Str::lower($user->lastname);
+        });
+
+        static::retrieved(function ($user) {
+            $user->firstname = Str::ucfirst($user->firstname);
+            $user->lastname = Str::ucfirst($user->lastname);
+        });
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->firstname . ' ' . $this->lastname;
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatars')->singleFile();
+    }
 }
